@@ -9,32 +9,73 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const LoginPage = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  const validate = () => {
+    let valid = true;
+    let newErrors = {};
+    if (!email) {
+      newErrors.email = 'Email is required';
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Enter a valid email';
+      valid = false;
+    }
+    if (!password) {
+      newErrors.password = 'Password is required';
+      valid = false;
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      valid = false;
+    }
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleLogin = () => {
+    if (validate()) {
+      navigation.navigate('Dashboard');
+    }
+  };
 
   return (
-    
     <View style={styles.container}>
-      
       <Text style={styles.header}>Welcome Back</Text>
 
       {/* Email Input */}
-      <View style={styles.inputWrapper}>
+      <View style={[styles.inputWrapper, emailFocused && styles.inputFocused]}>
         <TextInput
           placeholder="Email"
           placeholderTextColor="#aaa"
           style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          onFocus={() => setEmailFocused(true)}
+          onBlur={() => setEmailFocused(false)}
         />
         <Icon name="lock" size={18} color="#aaa" style={styles.inputIconRight} />
       </View>
+      {errors.email && <Text style={{ color: 'yellow', alignSelf: 'flex-start', marginBottom: 5 }}>{errors.email}</Text>}
 
       {/* Password Input */}
-      <View style={styles.inputWrapper}>
+      <View style={[styles.inputWrapper, passwordFocused && styles.inputFocused]}>
         <TextInput
           placeholder="Password"
           placeholderTextColor="#aaa"
           secureTextEntry={!passwordVisible}
           style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          onFocus={() => setPasswordFocused(true)}
+          onBlur={() => setPasswordFocused(false)}
         />
         <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
           <Icon
@@ -45,6 +86,7 @@ const LoginPage = ({ navigation }) => {
           />
         </TouchableOpacity>
       </View>
+      {errors.password && <Text style={{ color: 'yellow', alignSelf: 'flex-start', marginBottom: 5 }}>{errors.password}</Text>}
 
       {/* Remember Me and Forgot Password */}
       <View style={styles.optionsRow}>
@@ -66,7 +108,7 @@ const LoginPage = ({ navigation }) => {
       {/* Login Button */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Dashboard')}
+        onPress={handleLogin}
       >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
@@ -129,10 +171,16 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     justifyContent: 'space-between',
   },
+  inputFocused: {
+    borderWidth: 2,
+    borderColor: '#ffd700',
+  },
   input: {
     flex: 1,
     fontSize: 16,
     color: '#333',
+    borderColor:"none",
+    paddingVertical: 0,
   },
   inputIconRight: {
     marginLeft: 10,
