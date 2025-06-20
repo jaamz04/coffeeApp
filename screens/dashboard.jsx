@@ -266,6 +266,13 @@ const SIZE_ICONS = {
   Large: 'coffee-outline',
 };
 
+ const notifications = [
+    { id: '1', message: 'Your order has been shipped!', time: '2 mins ago' },
+    { id: '2', message: 'New flavor available: Mango Tango!', time: '10 mins ago' },
+    { id: '3', message: 'Your feedback is important to us.', time: '30 mins ago' },
+    { id: '4', message: 'Limited time offer: 20% off on all drinks!', time: '1 hour ago' },
+    { id: '5', message: 'We have received your payment. Thank you!', time: '2 hours ago' },
+  ];
 
 
 
@@ -277,8 +284,15 @@ const Dashboard = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('Home');
   const [userComment, setUserComment] = useState('');
   const [selectedCoffee, setSelectedCoffee] = useState(null);
-    const [selectedSize, setSelectedSize] = useState('Small');
+  const [selectedSize, setSelectedSize] = useState('Small');
   const [quantity, setQuantity] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalBakeryVisible, setModalBakeryVisible] = useState(false);
+  const [modalItem, setModalItem] = useState(null);
+  const [modalSize, setModalSize] = useState('Small');
+  const [modalQty, setModalQty] = useState(1);
+  const [showNotifications, setShowNotifications] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentRecommendation((prev) => (prev + 1) % recommendedCoffees.length);
@@ -309,6 +323,37 @@ const Dashboard = ({ navigation }) => {
 
   const recommended = recommendedCoffees[currentRecommendation];
 
+  // Open modal for drinks (flavors/iced)
+  const openItemModal = (item) => {
+    setModalItem(item);
+    setModalQty(1);
+    setModalSize('Small');
+    setModalVisible(true);
+  };
+
+  // Open modal for bakery
+  const openBakeryModal = (item) => {
+    setModalItem(item);
+    setModalQty(1);
+    setModalBakeryVisible(true);
+  };
+
+  // Add to cart from modal
+  const handleAddToCart = () => {
+    if (modalItem) {
+      const itemToAdd = { ...modalItem, quantity: modalQty, size: modalSize };
+      addToCart(itemToAdd);
+      setModalVisible(false);
+    }
+  };
+  const handleAddBakeryToCart = () => {
+    if (modalItem) {
+      const itemToAdd = { ...modalItem, quantity: modalQty };
+      addToCart(itemToAdd);
+      setModalBakeryVisible(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
@@ -327,9 +372,21 @@ const Dashboard = ({ navigation }) => {
               )}
             </Animated.View>
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Ionicons name="notifications-outline" size={28} color="#fff" />
-          </TouchableOpacity>
+          <View style={{ position: 'relative', zIndex: 9999 }}>
+            <TouchableOpacity onPress={() => setShowNotifications(!showNotifications)}>
+              <Ionicons name="notifications-outline" size={28} color="#fff" />
+            </TouchableOpacity>
+            {showNotifications && (
+              <View style={styles.notificationDropdown}>
+                {notifications.slice(0, 5).map((notif) => (
+                  <View key={notif.id} style={styles.notificationItem}>
+                    <Text style={styles.notificationMessage}>{notif.message}</Text>
+                    <Text style={styles.notificationTime}>{notif.time}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
@@ -411,7 +468,7 @@ const Dashboard = ({ navigation }) => {
                 keyExtractor={(item) => item.id.toString()}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.popularItem} onPress={() => addToCart(item)}>
+                  <TouchableOpacity style={styles.popularItem} onPress={() => openItemModal(item)}>
                     <Image source={item.image} style={styles.popularImage} resizeMode="contain" />
                     <Text style={styles.popularText}>{item.name}</Text>
                     <Text style={styles.popularPrice}>{item.price}</Text>
@@ -428,7 +485,7 @@ const Dashboard = ({ navigation }) => {
                 keyExtractor={(item) => item.id.toString()}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.popularItem} onPress={() => addToCart(item)}>
+                  <TouchableOpacity style={styles.popularItem} onPress={() => openItemModal(item)}>
                     <Image source={item.image} style={styles.popularImage} resizeMode="contain" />
                     <Text style={styles.popularText}>{item.name}</Text>
                     <Text style={styles.popularPrice}>{item.price}</Text>
@@ -445,7 +502,7 @@ const Dashboard = ({ navigation }) => {
                 keyExtractor={(item) => item.id.toString()}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.popularItem} onPress={() => addToCart(item)}>
+                  <TouchableOpacity style={styles.popularItem} onPress={() => openBakeryModal(item)}>
                     <Image source={item.image} style={styles.popularImage} resizeMode="contain" />
                     <Text style={styles.popularText}>{item.name}</Text>
                     <Text style={styles.popularPrice}>{item.price}</Text>
@@ -581,6 +638,92 @@ const Dashboard = ({ navigation }) => {
           <Ionicons name="settings-outline" size={24} color={activeTab === 'Settings' ? '#ffd700' : '#fff'} />
         </TouchableOpacity>
       </View>
+
+      {/* Modals for Drinks and Bakery Items */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {modalItem && (
+              <>
+                <Image source={modalItem.image} style={{ width: 100, height: 100, marginBottom: 10 }} />
+                <Text style={styles.modalTitle}>{modalItem.name}</Text>
+                <Text style={styles.modalText}>{modalItem.description}</Text>
+                <Text style={styles.label}>Select Size:</Text>
+                <View style={styles.row}>
+                  {['Small', 'Medium', 'Large'].map((size) => (
+                    <TouchableOpacity
+                      key={size}
+                      style={[
+                        styles.optionBox,
+                        modalSize === size && styles.selectedOptionBox,
+                        { flexDirection: 'column', alignItems: 'center',padding:20,height: 70,width:80, justifyContent: 'center', gap: 4 }
+                      ]}
+                      onPress={() => setModalSize(size)}
+                    >
+                      <Ionicons
+                        name={SIZE_ICONS[size]}
+                        size={32}
+                        color={modalSize === size ? '#fff' : '#6f4e37'}
+                        style={{ marginBottom: 4 }}
+                      />
+                      <Text style={[styles.optionText, modalSize === size && { color: '#fff' }]}>{size}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={styles.label}>Quantity:</Text>
+                <View style={styles.quantityRow}>
+                  <TouchableOpacity style={[styles.quantityButtonModal]} onPress={() => setModalQty(Math.max(1, modalQty - 1))}>
+                    <Text style={styles.quantityButtonTextModal}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.quantityText}>{modalQty}</Text>
+                  <TouchableOpacity style={[styles.quantityButtonModal]} onPress={() => setModalQty(modalQty + 1)}>
+                    <Text style={styles.quantityButtonTextModal}>+</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity style={styles.modalOrderButton} onPress={handleAddToCart}>
+                  <Ionicons name="cart-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={styles.modalOrderButtonText}>Add to Cart</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for bakery (quantity only) */}
+      <Modal visible={modalBakeryVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {modalItem && (
+              <>
+                <Image source={modalItem.image} style={{ width: 100, height: 100, marginBottom: 10 }} />
+                <Text style={styles.modalTitle}>{modalItem.name}</Text>
+                <Text style={styles.modalText}>{modalItem.description}</Text>
+                <Text style={styles.label}>Quantity:</Text>
+                <View style={styles.quantityRow}>
+                  <TouchableOpacity style={[styles.quantityButtonModal]} onPress={() => setModalQty(Math.max(1, modalQty - 1))}>
+                    <Text style={styles.quantityButtonTextModal}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.quantityText}>{modalQty}</Text>
+                  <TouchableOpacity style={[styles.quantityButtonModal]} onPress={() => setModalQty(modalQty + 1)}>
+                    <Text style={styles.quantityButtonTextModal}>+</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity style={styles.modalOrderButton} onPress={handleAddBakeryToCart}>
+                  <Ionicons name="cart-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={styles.modalOrderButtonText}>Add to Cart</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalBakeryVisible(false)}>
+                  <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -685,7 +828,7 @@ const styles = StyleSheet.create({
   },
 
   optionBox: {
-    width: '22%', // Makes all 4 items (3 sizes + qty) fit in one line
+    width: '22%',
     paddingVertical: 10,
     backgroundColor: '#eee',
     borderRadius: 10,
@@ -1019,5 +1162,134 @@ footer: {
     alignSelf: 'center',
   },
 
-
+  // New styles for modals
+  modalImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  modalDesc: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  sizeQtyContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 20,
+  },
+  sizeContainer: {
+    width: '48%',
+  },
+  quantityContainer: {
+    width: '48%',
+  },
+  sizeOption: {
+    backgroundColor: '#eee',
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    flex: 1,
+    marginRight: 8,
+  },
+  selectedSizeOption: {
+    backgroundColor: '#6f4e37',
+    borderColor: '#6f4e37',
+  },
+  sizeText: {
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  addToCartButton: {
+    backgroundColor: '#6F4E37',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignSelf: 'center',
+    width: '100%',
+    alignItems: 'center',
+  },
+  addToCartText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  quantityButtonModal: {
+    backgroundColor: '#6F4E37',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+  },
+  quantityButtonTextModal: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalOrderButton: {
+    backgroundColor: '#6F4E37',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  modalOrderButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  modalCancelButton: {
+    backgroundColor: '#8B4513',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  modalCancelButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  notificationDropdown: {
+    position: 'absolute',
+    top: 35,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 20, // maximize elevation for Android
+    padding: 10,
+    width: 250,
+    maxHeight: 300,
+    zIndex: 99999, // maximize zIndex for iOS/web
+    borderWidth: 1,
+    borderColor: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+  },
+  notificationItem: {
+    marginBottom: 10,
+  },
+  notificationMessage: {
+    fontSize: 14,
+    color: '#333',
+  },
+  notificationTime: {
+    fontSize: 12,
+    color: '#888',
+  },
 });
