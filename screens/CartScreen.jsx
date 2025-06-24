@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   Alert
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function CartScreen({ route, navigation }) {
   const { cartItems: initialCartItems = [] } = route.params || {};
@@ -125,14 +125,21 @@ export default function CartScreen({ route, navigation }) {
               ]}
               onPress={() => setPaymentMethod(method)}
             >
-              <Text
-                style={[
-                  styles.paymentText,
-                  paymentMethod === method && styles.selectedPaymentText
-                ]}
-              >
-                {method}
-              </Text>
+              {/* Remove the circle, just show the icon and label inline */}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {method === 'GCash' && <MaterialCommunityIcons name="cash-multiple" size={24} color="#0070ba" style={{ marginRight: 8 }} />}
+                {method === 'PayPal' && <FontAwesome5 name="paypal" size={24} color="#003087" style={{ marginRight: 8 }} />}
+                {method === 'Card' && <FontAwesome5 name="credit-card" size={24} color="#6c757d" style={{ marginRight: 8 }} />}
+                {method === 'Cash' && <Ionicons name="cash-outline" size={24} color="#388e3c" style={{ marginRight: 8 }} />}
+                <Text
+                  style={[
+                    styles.paymentText,
+                    paymentMethod === method && styles.selectedPaymentText
+                  ]}
+                >
+                  {method}
+                </Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -222,4 +229,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   orderButtonText: { color: '#3c2e25', fontSize: 18, fontWeight: 'bold' },
+  paymentIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
 });

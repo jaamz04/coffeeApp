@@ -14,13 +14,15 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 
-const Settings = () => {
+const Settings = ({ route }) => {
   const navigation = useNavigation();
+  const user = route?.params?.user;
   const [modal, setModal] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   // State for modal fields
-  const [fullName, setFullName] = useState('John Doe');
-  const [email, setEmail] = useState('john.doe@gmail.com');
-  const [address, setAddress] = useState('123 Main St, City');
+  const [fullName, setFullName] = useState(user?.username || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [address, setAddress] = useState(user?.address || '');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [notifOrder, setNotifOrder] = useState(true);
   const [notifPromo, setNotifPromo] = useState(false);
@@ -41,102 +43,207 @@ const Settings = () => {
   // Modal content map
   const modalContent = {
     personal: (
-      <View style={styles.modalContentBox}>
-        <Text style={styles.modalTitle}>Personal Information</Text>
-        <Text style={styles.modalLabel}>Full Name</Text>
-        <TextInput style={styles.modalInput} value={fullName} onChangeText={setFullName} />
-        <Text style={styles.modalLabel}>Email</Text>
-        <TextInput style={styles.modalInput} value={email} onChangeText={setEmail} keyboardType="email-address" />
-        <Text style={styles.modalLabel}>Address</Text>
-        <TextInput style={styles.modalInput} value={address} onChangeText={setAddress} />
-        <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModal(null)}>
-          <Text style={styles.closeModalText}>Close</Text>
+      <View style={[styles.modalContentBox, { alignItems: 'flex-start', width: 320, padding: 28 }]}>
+        <Text style={[styles.modalTitle, { alignSelf: 'center', width: '100%', marginBottom: 18 }]}>Personal Information</Text>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>Full Name</Text>
+          <TextInput
+            style={[styles.modalInput, { borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }]}
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Enter your full name"
+            placeholderTextColor="#adb5bd"
+          />
+        </View>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>Email</Text>
+          <TextInput
+            style={[styles.modalInput, { borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }]}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            placeholder="Enter your email"
+            placeholderTextColor="#adb5bd"
+          />
+        </View>
+        <View style={{ width: '100%', marginBottom: 18 }}>
+          <Text style={styles.modalLabel}>Address</Text>
+          <TextInput
+            style={[styles.modalInput, { borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }]}
+            value={address}
+            onChangeText={setAddress}
+            placeholder="Enter your address"
+            placeholderTextColor="#adb5bd"
+          />
+        </View>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { alignSelf: 'center', width: '100%', backgroundColor: '#592B1F', borderRadius: 6, marginTop: 8 }]}
+          onPress={() => setModal(null)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 17, textAlign: 'center' }]}>Save & Close</Text>
         </TouchableOpacity>
       </View>
     ),
     language: (
-      <View style={styles.modalContentBox}>
-        <Text style={styles.modalTitle}>Language</Text>
-        <Text style={styles.modalLabel}>Select Language</Text>
-        <View style={styles.dropdownContainer}>
-          <Picker
-            selectedValue={selectedLanguage}
-            style={styles.picker}
-            onValueChange={(itemValue) => setSelectedLanguage(itemValue)}
-          >
-            <Picker.Item label="English" value="en" />
-            <Picker.Item label="Filipino" value="fil" />
-            <Picker.Item label="Cebuano" value="ceb" />
-            <Picker.Item label="Spanish" value="es" />
-            <Picker.Item label="Chinese" value="zh" />
-          </Picker>
+      <View style={[styles.modalContentBox, { alignItems: 'flex-start', width: 320, padding: 28 }]}>
+        <Text style={[styles.modalTitle, { alignSelf: 'center', width: '100%', marginBottom: 18 }]}>Language</Text>
+        <View style={{ width: '100%', marginBottom: 18 }}>
+          <Text style={styles.modalLabel}>Select Language</Text>
+          <View style={{ borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }}>
+            <Picker
+              selectedValue={selectedLanguage}
+              style={{ width: '100%', color: '#333' }}
+              onValueChange={(itemValue) => setSelectedLanguage(itemValue)}
+            >
+              <Picker.Item label="English" value="en" />
+              <Picker.Item label="Filipino" value="fil" />
+              <Picker.Item label="Cebuano" value="ceb" />
+              <Picker.Item label="Spanish" value="es" />
+              <Picker.Item label="Chinese" value="zh" />
+            </Picker>
+          </View>
         </View>
-        <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModal(null)}>
-          <Text style={styles.closeModalText}>Okay</Text>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { alignSelf: 'center', width: '100%', backgroundColor: '#592B1F', borderRadius: 6, marginTop: 8 }]}
+          onPress={() => setModal(null)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 17, textAlign: 'center' }]}>Save & Close</Text>
         </TouchableOpacity>
       </View>
     ),
     notification: (
-      <View style={styles.modalContentBox}>
-        <Text style={styles.modalTitle}>Notifications</Text>
-        <View style={styles.switchRow}>
-          <Text style={styles.modalLabel}>Order Updates</Text>
-          <Switch value={notifOrder} onValueChange={setNotifOrder} />
+      <View style={[styles.modalContentBox, { alignItems: 'flex-start', width: 320, padding: 28 }]}>
+        <Text style={[styles.modalTitle, { alignSelf: 'center', width: '100%', marginBottom: 18 }]}>Notifications</Text>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <Text style={styles.modalLabel}>Order Updates</Text>
+            <Switch value={notifOrder} onValueChange={setNotifOrder} />
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <Text style={styles.modalLabel}>Promotions</Text>
+            <Switch value={notifPromo} onValueChange={setNotifPromo} />
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <Text style={styles.modalLabel}>App News</Text>
+            <Switch value={notifNews} onValueChange={setNotifNews} />
+          </View>
         </View>
-        <View style={styles.switchRow}>
-          <Text style={styles.modalLabel}>Promotions</Text>
-          <Switch value={notifPromo} onValueChange={setNotifPromo} />
-        </View>
-        <View style={styles.switchRow}>
-          <Text style={styles.modalLabel}>App News</Text>
-          <Switch value={notifNews} onValueChange={setNotifNews} />
-        </View>
-        <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModal(null)}>
-          <Text style={styles.closeModalText}>Close</Text>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { alignSelf: 'center', width: '100%', backgroundColor: '#592B1F', borderRadius: 6, marginTop: 8 }]}
+          onPress={() => setModal(null)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 17, textAlign: 'center' }]}>Save & Close</Text>
         </TouchableOpacity>
       </View>
     ),
     help: (
-      <View style={styles.modalContentBox}>
-        <Text style={styles.modalTitle}>Help & Support</Text>
-        <Text style={styles.modalLabel}>Email</Text>
-        <Text style={styles.modalText}>support@splitbill.com</Text>
-        <Text style={styles.modalLabel}>Phone</Text>
-        <Text style={styles.modalText}>+63 912 345 6789</Text>
-        <Text style={styles.modalLabel}>FAQ</Text>
-        <Text style={styles.modalText}>Visit our website for frequently asked questions.</Text>
-        <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModal(null)}>
-          <Text style={styles.closeModalText}>Close</Text>
+      <View style={[styles.modalContentBox, { alignItems: 'flex-start', width: 320, padding: 28 }]}>
+        <Text style={[styles.modalTitle, { alignSelf: 'center', width: '100%', marginBottom: 18 }]}>Help & Support</Text>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>Email</Text>
+          <Text style={[styles.modalText, { backgroundColor: '#f8f9fa', borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, padding: 8, marginTop: 4 }]}>support@splitbill.com</Text>
+        </View>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>Phone</Text>
+          <Text style={[styles.modalText, { backgroundColor: '#f8f9fa', borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, padding: 8, marginTop: 4 }]}>+63 912 345 6789</Text>
+        </View>
+        <View style={{ width: '100%', marginBottom: 18 }}>
+          <Text style={styles.modalLabel}>FAQ</Text>
+          <Text style={[styles.modalText, { backgroundColor: '#f8f9fa', borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, padding: 8, marginTop: 4 }]}>Visit our website for frequently asked questions.</Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { alignSelf: 'center', width: '100%', backgroundColor: '#592B1F', borderRadius: 6, marginTop: 8 }]}
+          onPress={() => setModal(null)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 17, textAlign: 'center' }]}>Close</Text>
         </TouchableOpacity>
       </View>
     ),
     updatePassword: (
-      <View style={styles.modalContentBox}>
-        <Text style={styles.modalTitle}>Update Password</Text>
-        <Text style={styles.modalLabel}>Current Password</Text>
-        <TextInput style={styles.modalInput} value={currentPassword} onChangeText={setCurrentPassword} placeholder="Current Password" secureTextEntry />
-        <Text style={styles.modalLabel}>New Password</Text>
-        <TextInput style={styles.modalInput} value={newPassword} onChangeText={setNewPassword} placeholder="New Password" secureTextEntry />
-        <Text style={styles.modalLabel}>Confirm New Password</Text>
-        <TextInput style={styles.modalInput} value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm New Password" secureTextEntry />
-        <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModal(null)}>
-          <Text style={styles.closeModalText}>Close</Text>
+      <View style={[styles.modalContentBox, { alignItems: 'flex-start', width: 320, padding: 28 }]}>
+        <Text style={[styles.modalTitle, { alignSelf: 'center', width: '100%', marginBottom: 18 }]}>Update Password</Text>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>Current Password</Text>
+          <TextInput
+            style={[styles.modalInput, { borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }]}
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+            placeholder="Current Password"
+            placeholderTextColor="#adb5bd"
+            secureTextEntry
+          />
+        </View>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>New Password</Text>
+          <TextInput
+            style={[styles.modalInput, { borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }]}
+            value={newPassword}
+            onChangeText={setNewPassword}
+            placeholder="New Password"
+            placeholderTextColor="#adb5bd"
+            secureTextEntry
+          />
+        </View>
+        <View style={{ width: '100%', marginBottom: 18 }}>
+          <Text style={styles.modalLabel}>Confirm New Password</Text>
+          <TextInput
+            style={[styles.modalInput, { borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, backgroundColor: '#f8f9fa', marginTop: 4 }]}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm New Password"
+            placeholderTextColor="#adb5bd"
+            secureTextEntry
+          />
+        </View>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { alignSelf: 'center', width: '100%', backgroundColor: '#592B1F', borderRadius: 6, marginTop: 8 }]}
+          onPress={() => setModal(null)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 17, textAlign: 'center' }]}>Save & Close</Text>
         </TouchableOpacity>
       </View>
     ),
     settings: (
-      <View style={styles.modalContentBox}>
-        <Text style={styles.modalTitle}>App Settings</Text>
-        <Text style={styles.modalLabel}>Theme</Text>
-        <Text style={styles.modalText}>Light / Dark (coming soon)</Text>
-        <Text style={styles.modalLabel}>Notifications</Text>
-        <Text style={styles.modalText}>Manage in Notification tab</Text>
-        <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModal(null)}>
-          <Text style={styles.closeModalText}>Close</Text>
+      <View style={[styles.modalContentBox, { alignItems: 'flex-start', width: 320, padding: 28 }]}>
+        <Text style={[styles.modalTitle, { alignSelf: 'center', width: '100%', marginBottom: 18 }]}>App Settings</Text>
+        <View style={{ width: '100%', marginBottom: 14 }}>
+          <Text style={styles.modalLabel}>Theme</Text>
+          <Text style={[styles.modalText, { backgroundColor: '#f8f9fa', borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, padding: 8, marginTop: 4 }]}>Light / Dark (coming soon)</Text>
+        </View>
+        <View style={{ width: '100%', marginBottom: 18 }}>
+          <Text style={styles.modalLabel}>Notifications</Text>
+          <Text style={[styles.modalText, { backgroundColor: '#f8f9fa', borderColor: '#ced4da', borderWidth: 1, borderRadius: 6, padding: 8, marginTop: 4 }]}>Manage in Notification tab</Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { alignSelf: 'center', width: '100%', backgroundColor: '#592B1F', borderRadius: 6, marginTop: 8 }]}
+          onPress={() => setModal(null)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 17, textAlign: 'center' }]}>Close</Text>
         </TouchableOpacity>
       </View>
     ),
   };
+
+  // Add logout confirmation modal
+  const logoutModal = (
+    <View style={[styles.modalContentBox, { alignItems: 'center', width: 300, padding: 28 }]}> 
+      <Text style={[styles.modalTitle, { marginBottom: 18, textAlign: 'center' }]}>Are you sure you want to logout?</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { backgroundColor: '#592B1F', flex: 1, marginRight: 8 }]}
+          onPress={() => setShowLogoutModal(false)}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 16, textAlign: 'center' }]}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.closeModalBtn, { backgroundColor: '#e74c3c', flex: 1, marginLeft: 8 }]}
+          onPress={logout}
+        >
+          <Text style={[styles.closeModalText, { color: '#fff', fontWeight: '600', fontSize: 16, textAlign: 'center' }]}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -152,6 +259,11 @@ const Settings = () => {
       {modal && (
         <View style={styles.modalOverlay}>
           {modalContent[modal]}
+        </View>
+      )}
+      {showLogoutModal && (
+        <View style={styles.modalOverlay}>
+          {logoutModal}
         </View>
       )}
 
@@ -170,10 +282,11 @@ const Settings = () => {
             style={styles.avatar}
           />
           <View style={styles.profileText}>
-            <Text style={styles.username}>John Doe</Text>
-            <TouchableOpacity onPress={() => Linking.openURL('mailto:john.doe@gmail.com')}>
-              <Text style={styles.email}>john.doe@gmail.com</Text>
+            <Text style={styles.username}>{user?.username || fullName || 'No Name'}</Text>
+            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${user?.email || email}`)}>
+              <Text style={styles.email}>{user?.email || email || 'No Email'}</Text>
             </TouchableOpacity>
+            
           </View>
         </View>
 
@@ -186,7 +299,7 @@ const Settings = () => {
           <SettingButton icon="question-circle" label="Help" onPress={() => setModal('help')} />
           <SettingButton icon="lock" label="Update Password" onPress={() => setModal('updatePassword')} />
           <SettingButton icon="cog" label="Settings" onPress={() => setModal('settings')} />
-          <SettingButton icon="power-off" label="Logout" danger onPress={logout} />
+          <SettingButton icon="power-off" label="Logout" danger onPress={() => setShowLogoutModal(true)} />
         </View>
       </ScrollView>
     </View>

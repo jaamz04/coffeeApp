@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { registerUser } from './api';
 
 const SignUpPage = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
@@ -45,9 +46,15 @@ const SignUpPage = ({ navigation }) => {
     return valid;
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (validate()) {
-      navigation.navigate('Login');
+      try {
+        await registerUser(fullName, email, password, address);
+        // Optionally, send address to backend if you want to store it
+        navigation.navigate('Login');
+      } catch (err) {
+        setErrors({ ...errors, api: err.message });
+      }
     }
   };
 
@@ -121,6 +128,7 @@ const SignUpPage = ({ navigation }) => {
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
+      {errors.api && <Text style={{ color: 'yellow', alignSelf: 'flex-start', marginBottom: 5 }}>{errors.api}</Text>}
 
       {/* Or Divider */}
       <Text style={styles.orText}>Or sign up with</Text>

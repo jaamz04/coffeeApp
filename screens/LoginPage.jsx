@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { loginUser } from './api';
 
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -38,9 +39,15 @@ const LoginPage = ({ navigation }) => {
     return valid;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (validate()) {
-      navigation.navigate('Dashboard');
+      try {
+        const data = await loginUser(email, password);
+        // Pass user data to Dashboard
+        navigation.navigate('Dashboard', { user: data.user });
+      } catch (err) {
+        setErrors({ ...errors, api: err.message });
+      }
     }
   };
 
@@ -112,6 +119,7 @@ const LoginPage = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
+      {errors.api && <Text style={{ color: 'yellow', alignSelf: 'flex-start', marginBottom: 5 }}>{errors.api}</Text>}
 
       {/* Divider */}
       <View style={styles.dividerWrapper}>

@@ -263,20 +263,22 @@ const coffeeHistoryData = [
 const SIZE_ICONS = {
   Small: 'cafe-outline',
   Medium: 'cafe-sharp',
-  Large: 'coffee-outline',
+  Large: 'cafe', // changed from 'coffee-outline' to 'cafe'
 };
 
- const notifications = [
-    { id: '1', message: 'Your order has been shipped!', time: '2 mins ago' },
-    { id: '2', message: 'New flavor available: Mango Tango!', time: '10 mins ago' },
-    { id: '3', message: 'Your feedback is important to us.', time: '30 mins ago' },
-    { id: '4', message: 'Limited time offer: 20% off on all drinks!', time: '1 hour ago' },
-    { id: '5', message: 'We have received your payment. Thank you!', time: '2 hours ago' },
+ // Example notifications with unread property
+const notifications = [
+    { id: '1', message: 'Your order has been shipped!', time: '2 mins ago', unread: true },
+    { id: '2', message: 'New flavor available: Mango Tango!', time: '10 mins ago', unread: false },
+    { id: '3', message: 'Your feedback is important to us.', time: '30 mins ago', unread: true },
+    { id: '4', message: 'Limited time offer: 20% off on all drinks!', time: '1 hour ago', unread: false },
+    { id: '5', message: 'We have received your payment. Thank you!', time: '2 hours ago', unread: false },
   ];
 
 
 
-const Dashboard = ({ navigation }) => {
+const Dashboard = ({ navigation, route }) => {
+  const user = route?.params?.user;
   const [isDelivery, setIsDelivery] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [currentRecommendation, setCurrentRecommendation] = useState(0);
@@ -358,7 +360,7 @@ const Dashboard = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.topBar}>
         <View>
-          <Text style={styles.welcome}>Welcome John</Text>
+          <Text style={styles.welcome}>Welcome {user?.username || 'Guest'}</Text>
           <Text style={styles.subHeader}>Dashboard</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
@@ -379,9 +381,9 @@ const Dashboard = ({ navigation }) => {
             {showNotifications && (
               <View style={styles.notificationDropdown}>
                 {notifications.slice(0, 5).map((notif) => (
-                  <View key={notif.id} style={styles.notificationItem}>
-                    <Text style={styles.notificationMessage}>{notif.message}</Text>
+                  <View key={notif.id} style={[styles.notificationItem, notif.unread && styles.notificationUnread]}>
                     <Text style={styles.notificationTime}>{notif.time}</Text>
+                    <Text style={styles.notificationMessage}>{notif.message}</Text>
                   </View>
                 ))}
               </View>
@@ -633,7 +635,7 @@ const Dashboard = ({ navigation }) => {
 
         <TouchableOpacity
           style={[styles.navItem, activeTab === 'Settings' && styles.activeNavItem]}
-          onPress={() => navigation.navigate('Settings')}
+          onPress={() => navigation.navigate('Settings', { user })}
         >
           <Ionicons name="settings-outline" size={24} color={activeTab === 'Settings' ? '#ffd700' : '#fff'} />
         </TouchableOpacity>
@@ -656,13 +658,13 @@ const Dashboard = ({ navigation }) => {
                       style={[
                         styles.optionBox,
                         modalSize === size && styles.selectedOptionBox,
-                        { flexDirection: 'column', alignItems: 'center',padding:20,height: 70,width:80, justifyContent: 'center', gap: 4 }
+                        { flexDirection: 'column', alignItems: 'center',padding:10,height: 70,width:80, justifyContent: 'center', gap: 4 }
                       ]}
                       onPress={() => setModalSize(size)}
                     >
                       <Ionicons
                         name={SIZE_ICONS[size]}
-                        size={32}
+                        size={30}
                         color={modalSize === size ? '#fff' : '#6f4e37'}
                         style={{ marginBottom: 4 }}
                       />
@@ -682,7 +684,7 @@ const Dashboard = ({ navigation }) => {
                 </View>
                 <TouchableOpacity style={styles.modalOrderButton} onPress={handleAddToCart}>
                   <Ionicons name="cart-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
-                  <Text style={styles.modalOrderButtonText}>Add to Cart</Text>
+                  <Text style={styles.modalOrderButtonText}>Order Now</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalVisible(false)}>
                   <Text style={styles.modalCancelButtonText}>Cancel</Text>
@@ -714,7 +716,7 @@ const Dashboard = ({ navigation }) => {
                 </View>
                 <TouchableOpacity style={styles.modalOrderButton} onPress={handleAddBakeryToCart}>
                   <Ionicons name="cart-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
-                  <Text style={styles.modalOrderButtonText}>Add to Cart</Text>
+                  <Text style={styles.modalOrderButtonText}>Order Now</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalBakeryVisible(false)}>
                   <Text style={styles.modalCancelButtonText}>Cancel</Text>
@@ -746,6 +748,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     color: '#fff',
+    marginTop: 10,
   },
   subHeader: {
     color: '#e0d5cb',
@@ -811,6 +814,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,
+    marginTop: 10,
   },
 
   labelSmall: {
@@ -1268,28 +1272,42 @@ footer: {
     top: 35,
     right: 0,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    elevation: 20, // maximize elevation for Android
-    padding: 10,
-    width: 250,
-    maxHeight: 300,
-    zIndex: 99999, // maximize zIndex for iOS/web
+    borderRadius: 12,
+    elevation: 24,
+    padding: 0,
+    width: 280,
+    maxHeight: 340,
+    zIndex: 99999,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#e0e0e0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+    overflow: 'hidden',
   },
   notificationItem: {
-    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fff',
   },
   notificationMessage: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: 15,
+    color: '#3c2e25',
+    fontWeight: '500',
   },
   notificationTime: {
     fontSize: 12,
-    color: '#888',
+    color: '#a0a0a0',
+    marginTop: 2,
+    textAlign: 'right',
+  },
+  // Highlight unread notifications
+  notificationUnread: {
+    backgroundColor: '#fffbe6', // light yellow for unread
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFD700', // gold highlight
   },
 });
